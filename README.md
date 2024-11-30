@@ -26,3 +26,5 @@ cd ../frontend
 npm install
 ```
 
+## Contributors
+
