@@ -32,3 +32,25 @@ Navigate to the frontend folder and install dependencies:
 cd ../frontend
 npm install
 ```
+
+## Usage
+
+To start the backend server, navigate to `backend/prisma` and create a `.env` file with the following content:
+
+```.env
+DATABASE_URL="postgresql://<username>:<password>@localhost:5432/<databaseName>?schema=public"
+```
+
+Then, run the following commands:
+```bash
+npx prisma migrate dev
+npx prisma generate
+cd ..
+npm run dev
+```
+
+To start the frontend server, run the following commands:
+```bash
+cd frontend
+npm run dev
+```
