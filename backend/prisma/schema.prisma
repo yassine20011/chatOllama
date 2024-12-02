@@ -17,8 +17,8 @@ datasource db {
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
-  firstName    String
-  lastName     String
+  firstName    String?
+  lastName     String?
   password     String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -38,7 +38,7 @@ model Message {
   id             String   @id @default(cuid())
   conversation   Conversation @relation(fields: [conversationId], references: [id])
   conversationId String
-  sender         String
-  content        String
+  userInput         String
+  modelResponse     String
   createdAt      DateTime @default(now())
 }
