@@ -1,4 +1,7 @@
 import jwt from "jsonwebtoken";
+import { config } from "dotenv";
+
+config();
 
 interface TokenPayload {
   id: string;
@@ -6,7 +9,7 @@ interface TokenPayload {
 }
 
 export const generateToken = (payload: TokenPayload) => {
-  return jwt.sign(payload, process.env.JWT_SECRET || "default", {
+  return jwt.sign(payload, process.env.JWT_SECRET || "defaultSecretIfnoEnvIsSet", {
     expiresIn: "60m",
     algorithm: "HS256",
   });

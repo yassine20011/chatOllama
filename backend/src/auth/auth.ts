@@ -1,5 +1,9 @@
 import { expressjwt as jwt } from "express-jwt";
 import * as express from "express";
+import { config } from "dotenv";
+
+
+config();
 
 const getToken = (req: express.Request): string => {
   const token = req.headers["x-access-token"];
