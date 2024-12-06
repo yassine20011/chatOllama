@@ -72,8 +72,4 @@ This script will download the model and run it in a Docker container, utilizing 
 
 ## UML Diagram
 
-### Class Diagram
-
-<center>
-<img src="diagram01.png" alt="Class Diagram" style="background-color: white; width: 600px;">
-</center>
+- [Class Diagram](diagram01.png)
