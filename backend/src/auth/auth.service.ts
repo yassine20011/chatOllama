@@ -9,6 +9,23 @@ export const getCurrentUser = async (id: string) => {
     where: {
       id,
     },
+    select: {
+      id: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      password: false,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+};
+
+export const deleteUser = async (id: string) => {
+  return await prisma.user.delete({
+    where: {
+      id,
+    },
   });
 };
 
@@ -39,7 +56,7 @@ export const createNewUser = async (newUser: NewUserType) => {
       },
     });
     const token = generateToken({ id: user.id, email: user.email });
-    
+
     return { user, token };
   } catch (e) {
     throw new Error("Error creating user");
