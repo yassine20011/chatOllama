@@ -1,7 +1,9 @@
 import bcrypt from "bcrypt";
 import { prisma } from "../../prisma/client";
 import { User } from ".prisma/client";
-import { NewUserType } from "../types/newUser";
+import { NewUserType } from "@/types/newUser";
+import { LoginInput } from "@/types/loginInput";
+
 import generateToken from "./jwt.utils";
 
 export const getCurrentUser = async (id: string) => {
@@ -18,6 +20,20 @@ export const getCurrentUser = async (id: string) => {
       createdAt: true,
       updatedAt: true,
     },
+  });
+};
+
+
+export const updateUser = async (id: string, data: Partial<User>) => {
+  return await prisma.user.update({
+    where: {
+      id,
+    },
+    data: {
+      email: data.email,
+      firstName: data.firstName,
+      lastName: data.lastName,
+    }
   });
 };
 
@@ -56,9 +72,29 @@ export const createNewUser = async (newUser: NewUserType) => {
       },
     });
     const token = generateToken({ id: user.id, email: user.email });
+    const { password, ...userData } = user;
 
-    return { user, token };
+    return { userData, token };
   } catch (e) {
     throw new Error("Error creating user");
   }
+};
+
+export const loginUser = async (LoginInput: LoginInput) => {
+  const user = await getUserByEmail(LoginInput.email);
+
+  if (!user) {
+    return { message: "User not found" };
+  }
+
+  const match = await bcrypt.compare(LoginInput.password, user.password);
+
+  if (!match) {
+    return { message: "Invalid password" };
+  }
+  
+  const { password, ...userData } = user;
+  const token = generateToken({ id: user.id, email: user.email });
+
+  return { userData, token };
 };
