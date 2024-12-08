@@ -1,67 +1,115 @@
-import React, { useState } from "react";
 import { Button } from '../components/ui/button';
-const Signin = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+import { Input } from "@/components/ui/input";
+import OllamaSvg from '@/assets/ollama.svg';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
-  const handleSubmit = (e:any) => {
-    e.preventDefault();
-    console.log("Email:", email, "Password:", password);
-    // You can replace this with a backend API call
+
+const Signin = () => {
+
+  const formSchema = z.object({
+    email: z.string().email(),
+    password: z.string().min(8),
+  });
+
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  })
+
+
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+    // TODO: Handle form submission @zakaria or @ahmed
+    console.log(values);
   };
 
-  
+
 
   return (
-    <div className="bg-black flex items-center justify-center h-screen">
-      <div className="bg-[#FE7600] shadow-md rounded-lg p-8 max-w-md w-full">
-        <h2 className="text-2xl font-bold text-center mb-6">Sign In</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email Address
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              placeholder="example@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+    <section className="bg-gray-50">
+      <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
+        <div className="w-full md:mt-0 sm:max-w-md xl:p-0">
+          <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
+            <div className="flex items-center justify-center">
+              <a
+                href="/"
+                className="flex items-center mb-6 text-2xl font-semibold text-gray-900"
+              >
+                <img
+                  className="w-8 h-8 mr-2"
+                  src={OllamaSvg}
+                  alt="ollama"
+                />
+                ChatOllama <span className="font-circle">●</span>
+              </a>
+            </div>
+            <Form  {...form}>
+
+              <form className="space-y-4 md:space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
+
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input placeholder="email@example.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input type="password" placeholder="********" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <Button
+                  type="submit"
+                  className="w-full"
+                >
+                  Sign in
+                </Button>
+                <p className="text-sm font-light text-gray-900">
+                  Don't have an account yet?{" "}
+                  <a
+                    href="/signup"
+                    className="font-medium text-primary-600 hover:underline"
+                  >
+                    Sign up
+                  </a>
+                </p>
+              </form>
+            </Form>
           </div>
-          <div className="mb-6">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          <Button
-            type="submit"
-            className="w-full bg-black text-white font-bold py-2 px-4 rounded hover:bg-gray-500 hover:text-black"
-          >
-            Sign In
-          </Button>
-        </form>
-        <p className="mt-4 text-center text-sm text-gray-600">
-          Don't have an account?{" "}
-          <a href="/signup" className="text-black hover:underline">
-            Sign Up
-          </a>
-        </p>
+        </div>
       </div>
-    </div>
+    </section>
+
   );
 };
 

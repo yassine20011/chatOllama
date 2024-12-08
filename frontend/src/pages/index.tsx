@@ -51,6 +51,9 @@ function Index() {
                         <div className="grid gap-x-3 gap-y-2 sm:grid-cols-2 sm:gap-y-0">
                             <Button
                                 className="btn relative btn-blue btn-large"
+                                onClick={() => {
+                                    window.location.href = "/signin";
+                                }}
                             >
                                 <div className="flex items-center justify-center">
                                     <span>Login</span>
@@ -58,6 +61,9 @@ function Index() {
                             </Button>
                             <Button
                                 className="btn relative btn-ghost btn-large"
+                                onClick={() => {
+                                    window.location.href = "/signup";
+                                }}
                             >
                                 <div className="flex items-center justify-center">
                                     <span>Sign up</span>
