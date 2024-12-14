@@ -12,6 +12,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import useAuth  from '@/hooks/useAuth';
 
 
 const Signin = () => {
@@ -30,10 +31,11 @@ const Signin = () => {
     },
   })
 
+  const { login } = useAuth();
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     // TODO: Handle form submission @zakaria or @ahmed
-    console.log(values);
+    await login({ email: values.email, password: values.password });
   };
 
 
@@ -87,7 +89,7 @@ const Signin = () => {
                     </FormItem>
                   )}
                 />
-                
+
                 <Button
                   type="submit"
                   className="w-full"
