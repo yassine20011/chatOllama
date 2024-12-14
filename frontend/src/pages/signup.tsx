@@ -12,6 +12,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import useAuth  from '@/hooks/useAuth';
 
 const Signup = () => {
 
@@ -31,10 +32,10 @@ const Signup = () => {
       password: ""
     },
   });
-
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    // TODO: Handle form submission
-    console.log(values);
+  const {signup} = useAuth();
+  const onSubmit = async  (values: z.infer<typeof formSchema>) => {
+    //Handle form submission
+    await  signup({email:values.email , password:values.password , firstName :values.firstName ,lastName: values.lastName});
   };
 
   return (
