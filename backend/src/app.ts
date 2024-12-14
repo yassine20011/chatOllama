@@ -7,9 +7,8 @@ import { json } from "stream/consumers";
 const app = express();
 const port = 3000;
 
-const whitelist = ["http://localhost:3000"];
 
-app.use(cors({ origin: whitelist }));
+app.use(cors());
 app.use(routes);
 
 app.get("/", (req, res) => {
