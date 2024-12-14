@@ -45,7 +45,7 @@ router.post(
         res.status(400).json(newUser);
         return;
       }
-      res.status(201).json(newUser);
+      res.status(200).json(newUser);
     } catch (err) {
       next(err);
     }
