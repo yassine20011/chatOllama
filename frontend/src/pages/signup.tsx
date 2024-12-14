@@ -16,20 +16,19 @@ import {
 const Signup = () => {
 
   const formSchema = z.object({
+    firstName: z.string().min(2, "Name must be at least 2 characters long"),
+    lastName: z.string().min(2, "Name must be at least 2 characters long"),
     email: z.string().email(),
     password: z.string().min(8, "Password must be at least 8 characters long"),
-    confirmPassword: z.string().min(8, "Password must be at least 8 characters long"),
-  }).refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      firstName: "",
+      lastName: "",
       email: "",
-      password: "",
-      confirmPassword: "",
+      password: ""
     },
   });
 
@@ -58,6 +57,32 @@ const Signup = () => {
             </div>
             <Form {...form}>
               <form className="space-y-4 md:space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
+              <FormField
+                  control={form.control}
+                  name="firstName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>First Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="First Name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="lastName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Last Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Last Name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <FormField
                   control={form.control}
@@ -79,20 +104,6 @@ const Signup = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="********" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Confirm Password</FormLabel>
                       <FormControl>
                         <Input type="password" placeholder="********" {...field} />
                       </FormControl>
