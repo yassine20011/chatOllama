@@ -82,8 +82,27 @@ function AuthContextProvider({ children }: any) {
 
     const signup = async (input: signupInput) => {
         // Call signup endpoint
-        // If successful, setUser(user)
-        // Else, setUser(null)
+        try {
+            const response = await axiosInstance.post('/v1/signup', input)
+            // If successful, setUser(user)
+            if(response.status==201 ){
+                console.log(response.data);
+                const { token, ...user } = response.data;
+                setUser(user);
+                setIsAuth(true);
+                setToken(token);
+                localStorage.setItem('token', token);
+                navigate('/chat/c');
+                console.log("isAuth", isAuth);
+            }
+            // Else, setUser(null)
+            else{
+                setUser(null);
+            }
+        }catch(error){
+            setUser(null);
+            throw error
+        }
     }
 
     const logout = async () => {
