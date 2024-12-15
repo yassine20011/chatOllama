@@ -93,7 +93,6 @@ function AuthContextProvider({ children }: any) {
                 setToken(token);
                 localStorage.setItem('token', token);
                 navigate('/chat/c');
-                console.log("isAuth", isAuth);
             }
             // Else, setUser(null)
             else{
