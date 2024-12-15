@@ -52,7 +52,6 @@ function AuthContextProvider({ children }: any) {
     const [user, setUser] = useState(null);
     const [isAuth, setIsAuth] = useState(checkToken(localStorage.getItem('token')));
     const [token, setToken] = useState(null);
-    const [loading, setLoading] = useState(true);
 
 
     const navigate = useNavigate();
@@ -127,7 +126,6 @@ function AuthContextProvider({ children }: any) {
             setUser(null);
         }
 
-        setLoading(false);
     }, []);
 
 
