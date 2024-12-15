@@ -14,7 +14,8 @@ import { ArrowUp } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { v4 as uuidv4 } from 'uuid';
 import MarkdownView from 'react-showdown';
-
+import axiosInstance from "@/conf/axois-instance";
+import { useNavigate } from "react-router-dom";
 
 interface Message {
     id?: string;
@@ -23,10 +24,16 @@ interface Message {
     loading?: boolean;
 }
 
+const createConversation = async () => {
+    const req = await axiosInstance.get('/v1/create/conversation');
+    console.log(req.data.id);
+    return req.data;
+}
+
 
 export default function Page() {
 
-
+    const navigate = useNavigate();
     const [messages, setMessages] = useState<Message[]>([{ id: uuidv4(), role: "assistant", content: "Hello! I'm Ollama. How can I help you today?", loading: false }]);
     const [input, setInput] = useState("");
 
@@ -41,6 +48,14 @@ export default function Page() {
 
     const handleReceiveMessage = async (userInput: string) => {
 
+        const path = window.location.pathname;
+        console.log(path);
+        if (path === "/chat/c/" || path === "/chat/c" || path === "/chat/c#") {
+            const { id } = await createConversation();
+            navigate(`/chat/${id}`);
+        }
+
+        
         const updatedMessages: Message[] = [...messages, { id: uuidv4(), role: "user", content: userInput, loading: true }, { id: uuidv4(), role: "assistant", content: "Thinking...", loading: true }];
         setMessages(updatedMessages);
 
@@ -86,7 +101,7 @@ export default function Page() {
             }
         } catch (error) {
             console.error(error);
-        } 
+        }
     };
 
 
