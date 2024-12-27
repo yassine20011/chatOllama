@@ -39,7 +39,7 @@ const createConversation = async (conversation: string) => {
         if (title) {
             const req = await axiosInstance.post('/v1/create/conversation',
                 {
-                    title: title
+                    title: title.split('\n').join('').trim().replace(/"/g, ''),
                 }
             );
 
