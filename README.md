@@ -4,6 +4,11 @@
 
 chatOllama is a mimic of ChatGPT that uses generative models to generate responses to user input based on the conversation's context. The project is built using React with TypeScript, Express.js, Prisma, Ollama, and Tailwind CSS & Shadcn/UI.
 
+
+## Video Demo
+
+- [YouTube](https://youtu.be/kQczZ-WDJyc)
+
 ## Prerequisites
 
 - Node.js (v21.6.2)
