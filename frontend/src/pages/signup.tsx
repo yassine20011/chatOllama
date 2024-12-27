@@ -12,9 +12,20 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import useAuth  from '@/hooks/useAuth';
+import useAuth from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+
 
 const Signup = () => {
+  const { isAuth } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuth) {
+      navigate("/chat/c");
+    }
+  }, []);
 
   const formSchema = z.object({
     firstName: z.string().min(2, "Name must be at least 2 characters long"),
@@ -32,10 +43,10 @@ const Signup = () => {
       password: ""
     },
   });
-  const {signup} = useAuth();
-  const onSubmit = async  (values: z.infer<typeof formSchema>) => {
+  const { signup } = useAuth();
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     //Handle form submission
-    await  signup({email:values.email , password:values.password , firstName :values.firstName ,lastName: values.lastName});
+    await signup({ email: values.email, password: values.password, firstName: values.firstName, lastName: values.lastName });
   };
 
   return (
@@ -58,7 +69,7 @@ const Signup = () => {
             </div>
             <Form {...form}>
               <form className="space-y-4 md:space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
-              <FormField
+                <FormField
                   control={form.control}
                   name="firstName"
                   render={({ field }) => (
@@ -71,7 +82,7 @@ const Signup = () => {
                     </FormItem>
                   )}
                 />
-                 <FormField
+                <FormField
                   control={form.control}
                   name="lastName"
                   render={({ field }) => (

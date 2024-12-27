@@ -1,9 +1,8 @@
 import axios from 'axios';
 import { jwtDecode } from "jwt-decode";
-import { config } from 'dotenv';
 
 
-const API_BASE_URL = "http://localhost:3000/";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 console.log('API_BASE_URL', API_BASE_URL);
 // Create an Axios instance
@@ -14,14 +13,14 @@ const axiosInstance = axios.create({
 // Request interceptor for API calls
 axiosInstance.interceptors.request.use(
     async (config) => {
-        const token = localStorage.getItem('token'); // https only cookie for production
+        const token = localStorage.getItem('token'); 
+        console.log('token', token);
         if (token) {
             const decodedToken = jwtDecode(token);
             if (decodedToken.exp && decodedToken.exp * 1000 < Date.now()) {
                 console.log('Access token has expired');
-                // TODO: logout user and redirect to login page
             } else {
-                config.headers.Authorization = `Bearer ${token}`;
+                config.headers["x-access-token"] = token;
             }
         }
         return config;

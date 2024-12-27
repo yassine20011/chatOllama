@@ -12,10 +12,19 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import useAuth  from '@/hooks/useAuth';
-
+import useAuth from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 const Signin = () => {
+  const { login, isAuth } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuth) {
+      navigate("/chat/c");
+    }
+  }, []);
 
   const formSchema = z.object({
     email: z.string().email(),
@@ -31,7 +40,6 @@ const Signin = () => {
     },
   })
 
-  const { login } = useAuth();
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     // TODO: Handle form submission @zakaria or @ahmed

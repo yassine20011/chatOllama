@@ -18,7 +18,8 @@ function App() {
           <Route path="/signin" element={<Signin />} />
           <Route path="/signup" element={<Signup />} />
           <Route path='/chat' element={<PrivateRoute />}>
-            <Route path=':conversationId' element={<Conversation />} />
+            <Route path='c' element={<Conversation />} />
+            <Route path='c/:conversationId' element={<Conversation />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

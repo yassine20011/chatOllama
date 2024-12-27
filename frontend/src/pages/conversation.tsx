@@ -1,4 +1,5 @@
 import { AppSidebar } from "@/components/app-sidebar";
+import { useToast } from "@/hooks/use-toast"
 import {
     SidebarInset,
     SidebarProvider,
@@ -14,7 +15,9 @@ import { ArrowUp } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { v4 as uuidv4 } from 'uuid';
 import MarkdownView from 'react-showdown';
-
+import axiosInstance from "@/conf/axois-instance";
+import { useNavigate } from "react-router-dom";
+import { generateTitle } from '@/utils/titleGenerator';
 
 interface Message {
     id?: string;
@@ -23,12 +26,99 @@ interface Message {
     loading?: boolean;
 }
 
+interface conversation {
+    id: string;
+    userId: string;
+    title: string;
+    createdAt: Date;
+}
+
+const createConversation = async (conversation: string) => {
+    const title = await generateTitle(conversation);
+    try {
+        if (title) {
+            const req = await axiosInstance.post('/v1/create/conversation',
+                {
+                    title: title
+                }
+            );
+
+            if (req.status === 201) {
+                return req.data;
+            }
+            return null;
+        }
+    }
+    catch (error) {
+        console.error(error);
+    }
+}
+
+const createMessage = async (conversationId: string, userInput: string, modelResponse: string) => {
+    const req = await axiosInstance.post("/v1/create/message", { conversationId, userInput, modelResponse });
+    if (req.status === 201) {
+        return req.data;
+    }
+    return null;
+}
+
+
+const fetchMessages = async (conversationId: string) => {
+    const req = await axiosInstance.get(`/v1/conversation/${conversationId}`);
+    console.log("messages", req.data);
+    return req.data;
+}
 
 export default function Page() {
 
-
+    const navigate = useNavigate();
     const [messages, setMessages] = useState<Message[]>([{ id: uuidv4(), role: "assistant", content: "Hello! I'm Ollama. How can I help you today?", loading: false }]);
     const [input, setInput] = useState("");
+    const [conversation, setConversation] = useState<conversation | null>(null);
+    const path = window.location.pathname;
+    const { toast } = useToast()
+
+
+
+
+    const checkConversationExists = async (conversationId: string) => {
+        const req = await axiosInstance.get(`/v1/check/conversation/${conversationId}`);
+        if (req.status === 404) {
+            navigate("/chat/c/");
+        }
+        return req.data;
+    }
+
+
+    // Fetch conversation and messages on page load
+    useEffect(() => {
+        const conversationId = path.split("/").pop();
+        if (conversationId) {
+            checkConversationExists(conversationId).then((data) => {
+                if (data.error === "Conversation not found") {
+                    navigate("/chat/c/");
+                    toast({
+                        title: "Error",
+                        description: "Conversation not found"
+                    });
+                }
+                else {
+                    setConversation(data);
+                    fetchMessages(data.id).then((data) => {
+                        setMessages(data.messages);
+                    });
+                }
+            }).catch((error) => {
+                console.error(error);
+                toast({
+                    title: "Error",
+                    description: error.message
+                });
+                navigate("/chat/c/");
+            })
+        }
+    }
+        , [path]);
 
 
     const chatEndRef = useRef<HTMLDivElement>(null);
@@ -83,10 +173,20 @@ export default function Page() {
                     newMessages[newMessages.length - 1].loading = false;
                     return newMessages;
                 });
+                if (conversation) {
+                    createMessage(conversation?.id, userInput, botMessage);
+                }
+
+                if (path === "/chat/c/" || path === "/chat/c" || path === "/chat/c#") {
+                    const conversationText = updatedMessages.map(msg => `${msg.role}: ${msg.content}`).join('\n');
+                    const { id } = await createConversation(conversationText);
+                    navigate(`/chat/c/${id}`);
+                }
+
             }
         } catch (error) {
             console.error(error);
-        } 
+        }
     };
 
 
@@ -115,7 +215,6 @@ export default function Page() {
             handleSendMessage();
         }
     }
-
 
 
     return (
