@@ -1,6 +1,7 @@
-import { Calendar, Home, Inbox, Search, Settings, ChevronUp } from "lucide-react"
+import { ChevronUp, CircleUser, MoreHorizontal } from "lucide-react"
 import useAuth from "@/hooks/useAuth"
-
+import axiosInstance from "@/conf/axois-instance"
+import { useEffect, useState } from "react"
 import {
   Sidebar,
   SidebarContent,
@@ -11,77 +12,101 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarFooter,
+  SidebarMenuAction,
 } from "@/components/ui/sidebar"
 
+import { Separator } from "@/components/ui/separator"
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-  } from "@/components/ui/dropdown-menu"
-  
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Toaster } from "@/components/ui/toaster"
+import { useNavigate } from "react-router-dom"
 
-// Menu items.
-const items = [
-  {
-    title: "Home",
-    url: "#",
-    icon: Home,
-  },
-  {
-    title: "Inbox",
-    url: "#",
-    icon: Inbox,
-  },
-  {
-    title: "Calendar",
-    url: "#",
-    icon: Calendar,
-  },
-  {
-    title: "Search",
-    url: "#",
-    icon: Search,
-  },
-  {
-    title: "Settings",
-    url: "#",
-    icon: Settings,
-  },
-]
+
+
+interface Conversation {
+  id: string
+  title: string
+  url: string
+}
 
 export function AppSidebar() {
-
+  const [conversations, setConversations] = useState<Conversation[]>([])
   const { logout } = useAuth()
+  const navigate = useNavigate()
+
+
+  useEffect(() => {
+    axiosInstance.get("/v1/get/conversations")
+      .then((response) => {
+        setConversations(response.data)
+      })
+      .catch((error) => {
+        console.error(error)
+      })
+  }, [])
+
+
+  const handleDeleteConversation = (id: string) => {
+    axiosInstance.delete(`/v1/delete/conversation/${id}`)
+      .then((response) => {
+        if (response.status === 204) {
+          setConversations(conversations.filter((item) => item.id !== id))
+        }
+      })
+      .catch((error) => {
+        console.error(error)
+      })
+  }
+
 
   return (
-    <Sidebar  collapsible="icon">
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Recent conversations</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-      <SidebarFooter>
+    <>
+      <Sidebar collapsible="icon">
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupLabel>Recent conversations</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {conversations.map((item) => (
+                  <SidebarMenuItem key={item.id}>
+                    <SidebarMenuButton asChild onClick={() => navigate(`/chat/c/${item.id}`)} className="cursor-pointer">
+                      <span className="whitespace-nowrap overflow-hidden overflow-ellipsis">
+                        {item.title}
+                      </span>
+                    </SidebarMenuButton>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <SidebarMenuAction>
+                          <MoreHorizontal />
+                        </SidebarMenuAction>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent side="right" align="start">
+                        <DropdownMenuItem>
+                          <span>Edit Title</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDeleteConversation(item.id)}>
+                          <span>Delete Conversation</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    <Separator />
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+        <SidebarFooter>
           <SidebarMenu>
             <SidebarMenuItem>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <SidebarMenuButton>
-                    <span>Account</span>
+                    <span><CircleUser /></span>
                     <ChevronUp className="ml-auto" />
                   </SidebarMenuButton>
                 </DropdownMenuTrigger>
@@ -102,6 +127,8 @@ export function AppSidebar() {
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarFooter>
-    </Sidebar>
+        <Toaster />
+      </Sidebar>
+    </>
   )
 }
