@@ -1,5 +1,6 @@
 import { AppSidebar } from "@/components/app-sidebar";
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/hooks/use-toast";
+import { Pen } from "lucide-react"
 import {
     SidebarInset,
     SidebarProvider,
@@ -15,9 +16,28 @@ import { ArrowUp } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { v4 as uuidv4 } from 'uuid';
 import MarkdownView from 'react-showdown';
-import axiosInstance from "@/conf/axois-instance";
 import { useNavigate } from "react-router-dom";
-import { generateTitle } from '@/utils/titleGenerator';
+import {
+    createConversation,
+    createMessage,
+    fetchMessages,
+    checkConversationExists,
+    createConversationWithOutTitle
+} from "@/utils/func";
+import {
+    ClipboardIcon,
+    ThumbsUpIcon,
+    ThumbsDownIcon,
+    RefreshCcwIcon
+}
+    from "@/components/icons";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
+
 
 interface Message {
     id?: string;
@@ -33,41 +53,7 @@ interface conversation {
     createdAt: Date;
 }
 
-const createConversation = async (conversation: string) => {
-    const title = await generateTitle(conversation);
-    try {
-        if (title) {
-            const req = await axiosInstance.post('/v1/create/conversation',
-                {
-                    title: title.split('\n').join('').trim().replace(/"/g, ''),
-                }
-            );
 
-            if (req.status === 201) {
-                return req.data;
-            }
-            return null;
-        }
-    }
-    catch (error) {
-        console.error(error);
-    }
-}
-
-const createMessage = async (conversationId: string, userInput: string, modelResponse: string) => {
-    const req = await axiosInstance.post("/v1/create/message", { conversationId, userInput, modelResponse });
-    if (req.status === 201) {
-        return req.data;
-    }
-    return null;
-}
-
-
-const fetchMessages = async (conversationId: string) => {
-    const req = await axiosInstance.get(`/v1/conversation/${conversationId}`);
-    console.log("messages", req.data);
-    return req.data;
-}
 
 export default function Page() {
 
@@ -77,17 +63,7 @@ export default function Page() {
     const [conversation, setConversation] = useState<conversation | null>(null);
     const path = window.location.pathname;
     const { toast } = useToast()
-
-
-
-
-    const checkConversationExists = async (conversationId: string) => {
-        const req = await axiosInstance.get(`/v1/check/conversation/${conversationId}`);
-        if (req.status === 404) {
-            navigate("/chat/c/");
-        }
-        return req.data;
-    }
+    const chatEndRef = useRef<HTMLDivElement>(null);
 
 
     // Fetch conversation and messages on page load
@@ -105,7 +81,26 @@ export default function Page() {
                 else {
                     setConversation(data);
                     fetchMessages(data.id).then((data) => {
-                        setMessages(data.messages);
+                        if (data.length > 0) {
+                            setMessages(() => {
+                                const dbMessages = data.flatMap((msg: any) => [
+                                    {
+                                        id: uuidv4(),
+                                        role: "user",
+                                        content: msg.userInput
+                                    },
+                                    {
+                                        id: uuidv4(),
+                                        role: "assistant",
+                                        content: msg.modelResponse
+                                    }
+                                ]);
+                                console.log("Flatmap", dbMessages);
+                                return dbMessages;
+                            })
+                        } else if (data.length === 0) {
+                            setMessages([{ id: uuidv4(), role: "assistant", content: "Hello! I'm Ollama. How can I help you today?", loading: false }]);
+                        }
                     });
                 }
             }).catch((error) => {
@@ -121,7 +116,6 @@ export default function Page() {
         , [path]);
 
 
-    const chatEndRef = useRef<HTMLDivElement>(null);
 
     // Scroll to the bottom whenever messages are updated
     useEffect(() => {
@@ -216,7 +210,6 @@ export default function Page() {
         }
     }
 
-
     return (
         <>
             <SidebarProvider defaultOpen={false}>
@@ -225,6 +218,16 @@ export default function Page() {
                     <div className="flex flex-col h-full">
                         <div className="sticky top-0 p-2">
                             <SidebarTrigger />
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger onClick={() => createConversationWithOutTitle().then((data) => navigate(`/chat/c/${data.id}`))}>
+                                        <Pen className="w-5 h-4" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>New conversation</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button
@@ -343,84 +346,3 @@ export default function Page() {
     );
 }
 
-function ClipboardIcon(props: any) {
-    return (
-        <svg
-            {...props}
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
-            <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
-            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-        </svg>
-    );
-}
-
-function RefreshCcwIcon(props: any) {
-    return (
-        <svg
-            {...props}
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
-            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-            <path d="M3 3v5h5" />
-            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
-            <path d="M16 16h5v5" />
-        </svg>
-    );
-}
-
-function ThumbsDownIcon(props: any) {
-    return (
-        <svg
-            {...props}
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
-            <path d="M17 14V2" />
-            <path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22h0a3.13 3.13 0 0 1-3-3.88Z" />
-        </svg>
-    );
-}
-
-function ThumbsUpIcon(props: any) {
-    return (
-        <svg
-            {...props}
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
-            <path d="M7 10v12" />
-            <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z" />
-        </svg>
-    );
-}
